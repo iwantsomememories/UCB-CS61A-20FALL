@@ -319,7 +319,12 @@ def make_averaged(original_function, trials_count=1000):
     3.0
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    def func(*args):
+        sum = 0
+        for i in range(trials_count):
+            sum += original_function(*args)
+        return sum/trials_count
+    return func
     # END PROBLEM 8
 
 
@@ -333,7 +338,16 @@ def max_scoring_num_rolls(dice=six_sided, trials_count=1000):
     1
     """
     # BEGIN PROBLEM 9
-    "*** YOUR CODE HERE ***"
+    max_averaged_score = 0
+    best_roll = 0
+    averaged_func = make_averaged(roll_dice, trials_count)
+    for i in range(1, 11):
+        score = averaged_func(i, dice)
+        if score > max_averaged_score:
+            max_averaged_score = score
+            best_roll = i
+    
+    return best_roll
     # END PROBLEM 9
 
 
@@ -346,7 +360,7 @@ def winner(strategy0, strategy1):
         return 1
 
 
-def average_win_rate(strategy, baseline=always_roll(6)):
+def average_win_rate(strategy, baseline=always_roll(4)):
     """Return the average win rate of STRATEGY against BASELINE. Averages the
     winrate when starting the game as player 0 and as player 1.
     """
@@ -371,7 +385,7 @@ def run_experiments():
     if False:  # Change to True to test extra_turn_strategy
         print('extra_turn_strategy win rate:', average_win_rate(extra_turn_strategy))
 
-    if False:  # Change to True to test final_strategy
+    if True:  # Change to True to test final_strategy
         print('final_strategy win rate:', average_win_rate(final_strategy))
 
     "*** You may add additional experiments as you wish ***"
@@ -383,7 +397,10 @@ def bacon_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     rolls NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    return 6  # Replace this statement
+    if free_bacon(opponent_score) >= cutoff:
+        return 0
+    else :
+        return num_rolls
     # END PROBLEM 10
 
 
@@ -393,7 +410,12 @@ def extra_turn_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     Otherwise, it rolls NUM_ROLLS.
     """
     # BEGIN PROBLEM 11
-    return 6  # Replace this statement
+    bacon_score = free_bacon(opponent_score)
+    if bacon_score >= cutoff:
+        return 0
+    if swine_align(bacon_score+score, opponent_score) or pig_pass(bacon_score+score, opponent_score):
+        return 0
+    return num_rolls
     # END PROBLEM 11
 
 
@@ -403,7 +425,12 @@ def final_strategy(score, opponent_score):
     *** YOUR DESCRIPTION HERE ***
     """
     # BEGIN PROBLEM 12
-    return 6  # Replace this statement
+    cutoff = GOAL_SCORE - score
+    num_rolls = 5
+    if extra_turn_strategy(score, opponent_score, cutoff, num_rolls) == 0:
+        return 0
+    else:
+        return num_rolls
     # END PROBLEM 12
 
 ##########################
