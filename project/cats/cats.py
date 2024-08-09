@@ -150,7 +150,12 @@ def autocorrect(typed_word, valid_words, diff_function, limit):
     'testing'
     """
     # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
+    if typed_word in valid_words:
+        return typed_word
+    ret_word = min(valid_words, key = lambda word : diff_function(typed_word, word, limit))
+    if diff_function(typed_word, ret_word, limit) > limit:
+        ret_word = typed_word
+    return ret_word
     # END PROBLEM 5
 
 
@@ -177,11 +182,24 @@ def feline_flips(start, goal, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    def inner_helper(s, g, diff):
+        if diff > limit:
+            return diff
+        m, n = len(s), len(g)
+        if m == 0 and n == 0:
+            return diff
+        if m == n:
+            return inner_helper(s[1:], g[1:], diff if s[0] == g[0] else diff+1)
+        elif m > n:
+            return inner_helper(s[:n], g, m - n)
+        else:
+            return inner_helper(s, g[:m], n - m)
+
+    return inner_helper(start, goal, 0)
     # END PROBLEM 6
 
 
-def minimum_mewtations(start, goal, limit):
+def minimum_mewtations(start, goal, limit, steps = 0):
     """A diff function that computes the edit distance from START to GOAL.
     This function takes in a string START, a string GOAL, and a number LIMIT.
 
@@ -198,24 +216,33 @@ def minimum_mewtations(start, goal, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
+    if steps > limit:
+        return steps
 
-    if ______________:  # Fill in the condition
+    m, n = len(start), len(goal)
+    
+    if m == 0 and n == 0:  # Fill in the condition
         # BEGIN
-        "*** YOUR CODE HERE ***"
+        return 0
         # END
 
-    elif ___________:  # Feel free to remove or add additional cases
+    elif m == 0:  # Feel free to remove or add additional cases
         # BEGIN
-        "*** YOUR CODE HERE ***"
+        return n
         # END
+
+    elif n == 0:
+        return m
+
+    elif start[0] == goal[0]:
+        return minimum_mewtations(start[1:], goal[1:], limit, steps)
 
     else:
-        add = ...  # Fill in these lines
-        remove = ...
-        substitute = ...
+        add = minimum_mewtations(start, goal[1:], limit, steps+1)
+        remove = minimum_mewtations(start[1:], goal, limit, steps+1)
+        substitute = minimum_mewtations(start[1:], goal[1:], limit, steps+1)
         # BEGIN
-        "*** YOUR CODE HERE ***"
+        return min(add, remove, substitute)
         # END
 
 
