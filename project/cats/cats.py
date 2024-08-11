@@ -223,16 +223,16 @@ def minimum_mewtations(start, goal, limit, steps = 0):
     
     if m == 0 and n == 0:  # Fill in the condition
         # BEGIN
-        return 0
+        return steps
         # END
 
     elif m == 0:  # Feel free to remove or add additional cases
         # BEGIN
-        return n
+        return steps+n
         # END
 
     elif n == 0:
-        return m
+        return steps+m
 
     elif start[0] == goal[0]:
         return minimum_mewtations(start[1:], goal[1:], limit, steps)
@@ -284,7 +284,17 @@ def report_progress(sofar, prompt, user_id, upload):
     0.2
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    user_score = {'id': user_id}
+    count, i = 0, 0
+    while i < len(sofar) and i < len(prompt):
+        if sofar[i] == prompt[i]:
+            count += 1
+        else:
+            break
+        i += 1
+    user_score['progress'] = count/len(prompt)
+    upload(user_score)
+    return user_score['progress']
     # END PROBLEM 8
 
 
@@ -306,7 +316,13 @@ def time_per_word(words, times_per_player):
     [[6, 3, 6, 2], [10, 6, 1, 2]]
     """
     # BEGIN PROBLEM 9
-    "*** YOUR CODE HERE ***"
+    times = []
+    for i in range(len(times_per_player)):
+        time_stamp = times_per_player[i]
+        time = [ time_stamp[j] - time_stamp[j-1] for j in range(1, len(time_stamp))]
+        times.append(time)
+    
+    return match(words, times)
     # END PROBLEM 9
 
 
@@ -328,7 +344,22 @@ def fastest_words(match):
     player_indices = range(len(get_times(match)))  # contains an *index* for each player
     word_indices = range(len(get_words(match)))    # contains an *index* for each word
     # BEGIN PROBLEM 10
-    "*** YOUR CODE HERE ***"
+    fastest_player_per_word = []
+    for i in word_indices:
+        min_time = time(match, 0, i)
+        min_index = 0
+        for j in player_indices:
+            if time(match, j, i) < min_time:
+                min_time = time(match, j, i)
+                min_index = j
+
+        fastest_player_per_word.append(min_index)
+
+    res = [[] for i in player_indices]
+    for i in word_indices:
+        res[fastest_player_per_word[i]].append(word_at(match, i))
+
+    return res
     # END PROBLEM 10
 
 
@@ -380,7 +411,7 @@ def match_string(match):
     return "match(%s, %s)" % (match[0], match[1])
 
 
-enable_multiplayer = False  # Change to True when you're ready to race.
+enable_multiplayer = True  # Change to True when you're ready to race.
 
 ##########################
 # Command Line Interface #
