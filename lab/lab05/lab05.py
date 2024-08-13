@@ -253,7 +253,7 @@ def coords(fn, seq, lower, upper):
     [[-2, 4], [1, 1], [3, 9]]
     """
     "*** YOUR CODE HERE ***"
-    return ______
+    return [[x, fn(x)] for x in seq if fn(x) >= lower and fn(x) <= upper]
 
 
 def riffle(deck):
@@ -266,7 +266,7 @@ def riffle(deck):
     [0, 10, 1, 11, 2, 12, 3, 13, 4, 14, 5, 15, 6, 16, 7, 17, 8, 18, 9, 19]
     """
     "*** YOUR CODE HERE ***"
-    return _______
+    return [deck[k//2] if k % 2 == 0 else deck[k//2+len(deck)//2] for k in range(len(deck))]
 
 
 def add_trees(t1, t2):
@@ -304,7 +304,22 @@ def add_trees(t1, t2):
         5
       5
     """
-    "*** YOUR CODE HERE ***"
+    if is_leaf(t1) and is_leaf(t2):
+        return tree(label(t1)+label(t2))
+    elif is_leaf(t1):
+        return tree(label(t1)+label(t2), branches(t2))
+    elif is_leaf(t2):
+        return tree(label(t1)+label(t2), branches(t1))
+    else:
+        zip_branches = zip(branches(t1), branches(t2))
+        added_branches = [add_trees(b1, b2) for b1, b2 in zip_branches]
+        if len(branches(t1)) < len(branches(t2)):
+            added_branches += branches(t2)[len(branches(t1)):]
+        elif len(branches(t1)) > len(branches(t2)):
+            added_branches += branches(t1)[len(branches(t2)):]
+
+        return tree(label(t1)+label(t2), added_branches)
+
 
 
 def build_successors_table(tokens):
@@ -325,8 +340,8 @@ def build_successors_table(tokens):
     prev = '.'
     for word in tokens:
         if prev not in table:
-            "*** YOUR CODE HERE ***"
-        "*** YOUR CODE HERE ***"
+            table[prev] = []
+        table[prev].append(word)
         prev = word
     return table
 
@@ -343,7 +358,10 @@ def construct_sent(word, table):
     import random
     result = ''
     while word not in ['.', '!', '?']:
-        "*** YOUR CODE HERE ***"
+        if word not in table:
+            break
+        result += word + ' '
+        word = random.choice(table[word])
     return result.strip() + word
 
 def shakespeare_tokens(path='shakespeare.txt', url='http://composingprograms.com/shakespeare.txt'):
@@ -357,8 +375,8 @@ def shakespeare_tokens(path='shakespeare.txt', url='http://composingprograms.com
         return shakespeare.read().decode(encoding='ascii').split()
 
 # Uncomment the following two lines
-# tokens = shakespeare_tokens()
-# table = build_successors_table(tokens)
+tokens = shakespeare_tokens()
+table = build_successors_table(tokens)
 
 def random_sent():
     import random
