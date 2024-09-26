@@ -38,7 +38,9 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
         # BEGIN PROBLEM 4
         operator = scheme_eval(first, env)
         validate_procedure(operator)
-        operands = expr.rest.map((lambda f : lambda x: f(x, env))(scheme_eval))
+        if isinstance(operator, MacroProcedure):
+            return scheme_eval(operator.apply_macro(rest, env), env)
+        operands = rest.map(lambda expr : scheme_eval(expr, env))
         return scheme_apply(operator, operands, env)
         # END PROBLEM 4
 
@@ -451,7 +453,17 @@ def do_define_macro(expressions, env):
     1
     """
     # BEGIN Problem 20
-    "*** YOUR CODE HERE ***"
+    validate_form(expressions, 2)
+    target = expressions.first
+    if isinstance(target, Pair) and scheme_symbolp(target.first):
+        name = target.first
+        formals = target.rest
+        body = expressions.rest
+        env.define(name, MacroProcedure(formals, body, env))
+        return name
+    else:
+        bad_target = target.first if isinstance(target, Pair) else target
+        raise SchemeError(f'non-symbol: {bad_target}')
     # END Problem 20
 
 
@@ -562,7 +574,10 @@ class MuProcedure(Procedure):
         self.body = body
 
     # BEGIN PROBLEM 18
-    "*** YOUR CODE HERE ***"
+    def make_call_frame(self, args, env):
+        new_env = env.make_child_frame(self.formals, args)
+        return new_env
+        
     # END PROBLEM 18
 
     def __str__(self):
@@ -578,7 +593,8 @@ def do_mu_form(expressions, env):
     formals = expressions.first
     validate_formals(formals)
     # BEGIN PROBLEM 18
-    "*** YOUR CODE HERE ***"
+    mup = MuProcedure(formals, expressions.rest)
+    return mup
     # END PROBLEM 18
 
 SPECIAL_FORMS['mu'] = do_mu_form
