@@ -2,7 +2,7 @@ class Pair:
     """表示 Scheme 中内置的对数据结构。"""
     def __init__(self, first, rest):
         self.first = first
-        if not scheme_valid_cdrp(rest):
+        if (not isinstance(rest, Pair)) and (rest is not nil):
             raise SchemeError("cdr 只能是一个对、nil 或一个 promise，但实际为 {}".format(rest))
         self.rest = rest
 
@@ -17,6 +17,12 @@ class Pair:
 
     def __repr__(self):
         return 'Pair({}, {})'.format(self.first, self.rest)
+
+    def __iter__(self):
+        current = self
+        while current is not nil:
+            yield current.first
+            current = current.rest
 
 class nil:
     """表示 Scheme 中特殊的空对 nil。"""
@@ -49,10 +55,13 @@ nil = nil()  # 这将永远隐藏 nil 类
 """
 
 # Question 2.1
+from operator import add, sub, mul, mod, truediv, floordiv, lt, eq, gt
+
+OPERATORS = {'+': add, '-': sub, '*': mul, '/': truediv, '//': floordiv, '<': lt, '=': eq, '>':gt}
 
 def calc_eval(exp):
     if isinstance(exp, Pair):
-        if _______________________:  # and 表达式
+        if exp.first == 'and':  # and 表达式
             return eval_and(exp.rest)
         else:  # 调用表达式
             return calc_apply(calc_eval(exp.first), list(exp.rest.map(calc_eval)))
@@ -63,9 +72,17 @@ def calc_eval(exp):
 
 def eval_and(operands):
     # 实现和表达式的处理逻辑
+    while operands is not nil:
+        expr = operands.first
+        value = calc_eval(expr)
+        if not value:
+            return False
+        operands = operands.rest
+
+    return value
 
 def calc_apply(fn, args):
     """对数字列表应用计算器操作。"""
-    return fn(args)
+    return fn(*args)
 
 
