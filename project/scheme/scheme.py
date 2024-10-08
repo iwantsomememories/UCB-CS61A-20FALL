@@ -76,10 +76,12 @@ def eval_all(expressions, env):
     # BEGIN PROBLEM 7
     if expressions is nil:
         return None
+    res = None
     while expressions.rest is not nil:
-        scheme_eval(expressions.first, env)
+        res = scheme_eval(expressions.first, env)
         expressions = expressions.rest
-    return scheme_eval(expressions.first, env) # replace this with lines of your own code
+    res = scheme_eval(expressions.first, env, True)
+    return res # replace this with lines of your own code
     # END PROBLEM 7
 
 ################
@@ -330,9 +332,9 @@ def do_if_form(expressions, env):
     """
     validate_form(expressions, 2, 3)
     if is_true_primitive(scheme_eval(expressions.first, env)):
-        return scheme_eval(expressions.rest.first, env)
+        return scheme_eval(expressions.rest.first, env, True)
     elif len(expressions) == 3:
-        return scheme_eval(expressions.rest.rest.first, env)
+        return scheme_eval(expressions.rest.rest.first, env, True)
 
 def do_and_form(expressions, env):
     """Evaluate a (short-circuited) and form.
@@ -350,12 +352,15 @@ def do_and_form(expressions, env):
     # BEGIN PROBLEM 12
     if expressions is nil:
         return True
-    while expressions != nil:
+    while expressions.rest != nil:
         value = scheme_eval(expressions.first, env)
         if is_false_primitive(value):
             return False
         expressions = expressions.rest
-
+    
+    value = scheme_eval(expressions.first, env, True)
+    if is_false_primitive(value):
+        return False
     return value
     # END PROBLEM 12
 
@@ -375,12 +380,15 @@ def do_or_form(expressions, env):
     # BEGIN PROBLEM 12
     if expressions is nil:
         return False
-    while expressions != nil:
+    while expressions.rest != nil:
         value = scheme_eval(expressions.first, env)
         if not is_false_primitive(value):
             return value
         expressions = expressions.rest
 
+    value = scheme_eval(expressions.first, env, True)
+    if not is_false_primitive(value):
+        return value
     return False
     # END PROBLEM 12
 
@@ -666,7 +674,9 @@ def optimize_tail_calls(original_scheme_eval):
 
         result = Thunk(expr, env)
         # BEGIN PROBLEM 19
-        "*** YOUR CODE HERE ***"
+        while isinstance(result, Thunk):
+            result = original_scheme_eval(result.expr, result.env)
+        return result
         # END PROBLEM 19
     return optimized_eval
 
@@ -678,7 +688,7 @@ def optimize_tail_calls(original_scheme_eval):
 ################################################################
 # Uncomment the following line to apply tail call optimization #
 ################################################################
-# scheme_eval = optimize_tail_calls(scheme_eval)
+scheme_eval = optimize_tail_calls(scheme_eval)
 
 
 
